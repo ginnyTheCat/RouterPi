@@ -71,7 +71,7 @@ sudo systemctl unmask hostapd
 sudo systemctl enable hostapd
 
 # Make tools executable
-chmod +x leases.sh mac.sh net_led.sh rtl8192eu.sh
+chmod +x boot.sh leases.sh mac.sh net_led.sh rtl8192eu.sh wifi.sh
 
 # Config iptables
 orig_file /etc/sysctl.conf
@@ -84,8 +84,10 @@ if [ ! -f /etc/iptables.ipv4.nat ]; then
     sudo iptables-save | sudo tee /etc/iptables.ipv4.nat
 fi
 
+# Autostart tools
+sudo mv boot.sh /boot.sh
 orig_file /etc/rc.local
-sudo sed -i '/^exit 0/i iptables-restore </etc/iptables.ipv4.nat\n/home/pi/mac.sh wlan0 $(cat /mac.txt)\n/home/pi/net_led.sh &' /etc/rc.local
+sudo sed -i '/^exit 0/i /boot.sh' /etc/rc.local
 
 sudo mv /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
 

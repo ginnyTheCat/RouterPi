@@ -19,5 +19,5 @@ network={
   psk=\"$password\"
 }" | sudo tee /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
 
-echo $mac | sudo tee /mac.txt
-./mac wlan0 $mac
+echo $mac | sudo tee /mac_wlan.txt
+./mac.sh wlan0 $mac
