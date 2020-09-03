@@ -1,6 +1,4 @@
-echo -n "WiFi: "
-read name
-file=saved_wifis/$name.txt
+file=saved_wifis/$1.txt
 
 ssid=$(sed -n '1p' $file)
 password=$(sed -n '2p' $file)

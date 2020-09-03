@@ -18,7 +18,7 @@ RANGE_ETH=2
 
 # Install packets
 sudo apt-get update
-sudo apt-get install -y dnsmasq hostapd
+sudo apt-get install -y dnsmasq hostapd openvpn
 
 orig_file() {
     if [ ! -f $1.orig ]; then
@@ -71,7 +71,7 @@ sudo systemctl unmask hostapd
 sudo systemctl enable hostapd
 
 # Make tools executable
-chmod +x boot.sh leases.sh mac.sh net_led.sh rtl8192eu.sh wifi.sh
+chmod +x boot.sh ip.sh leases.sh mac.sh net_led.sh rtl8192eu.sh wifi.sh vpn/disable.sh vpn/enable.sh vpn/gen_protonvpn.sh
 
 # Config iptables
 orig_file /etc/sysctl.conf
@@ -80,6 +80,7 @@ echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 if [ ! -f /etc/iptables.ipv4.nat ]; then
     sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
     sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+    sudo iptables -t nat -A POSTROUTING -o tun0 -j MASQUERADE
 
     sudo iptables-save | sudo tee /etc/iptables.ipv4.nat
 fi
