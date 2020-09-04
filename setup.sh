@@ -77,12 +77,18 @@ chmod +x boot.sh ip.sh leases.sh mac.sh net_led.sh rtl8192eu.sh wifi.sh vpn/disa
 orig_file /etc/sysctl.conf
 echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 
-if [ ! -f /etc/iptables.ipv4.nat ]; then
+echo "normal" | sudo tee /iptables.txt
+if [ ! -f /etc/iptables4.normal ]; then
+    sudo iptables-save | sudo tee /etc/iptables4.normal
+
+    sudo iptables -t nat -A POSTROUTING -o tun0 -j MASQUERADE
+    sudo iptables-save | sudo tee /etc/iptables4.vpn
+
+    sudo iptables-restore </etc/iptables4.normal
+
     sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
     sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    sudo iptables -t nat -A POSTROUTING -o tun0 -j MASQUERADE
-
-    sudo iptables-save | sudo tee /etc/iptables.ipv4.nat
+    sudo iptables-save | sudo tee /etc/iptables4.normal
 fi
 
 # Autostart tools
