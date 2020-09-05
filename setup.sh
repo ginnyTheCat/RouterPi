@@ -16,6 +16,8 @@ INTERNAL_ETH=11:22:33:44:55:66
 EXTERNAL_ETH=11:22:33:44:66:66
 RANGE_ETH=2
 
+DHCP_LEASING_TIME=24h
+
 # Install packets
 sudo apt-get update
 sudo apt-get install -y dnsmasq hostapd openvpn
@@ -43,8 +45,8 @@ interface eth1
 static ip_address=192.168.$RANGE_ETH.1/24" | sudo tee -a /etc/dhcpcd.conf
 
 # Create DHCP config
-echo "dhcp-range=wlan1,192.168.$RANGE_WLAN.2,192.168.$RANGE_WLAN.255,255.255.255.0,24h
-dhcp-range=eth1,192.168.$RANGE_ETH.2,192.168.$RANGE_ETH.255,255.255.255.0,24h" | sudo tee /etc/dnsmasq.conf
+echo "dhcp-range=wlan1,192.168.$RANGE_WLAN.2,192.168.$RANGE_WLAN.255,$DHCP_LEASING_TIME
+dhcp-range=eth1,192.168.$RANGE_ETH.2,192.168.$RANGE_ETH.255,$DHCP_LEASING_TIME" | sudo tee /etc/dnsmasq.conf
 
 # Get WiFi settings
 echo -n "SSID: "
@@ -77,15 +79,13 @@ chmod +x boot.sh ip.sh leases.sh mac.sh net_led.sh rtl8192eu.sh wifi.sh vpn/disa
 orig_file /etc/sysctl.conf
 echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 
-echo "normal" | sudo tee /iptables.txt
 if [ ! -f /etc/iptables4.normal ]; then
-    sudo iptables-save | sudo tee /etc/iptables4.normal
+    echo "normal" | sudo tee /iptables.txt
 
     sudo iptables -t nat -A POSTROUTING -o tun0 -j MASQUERADE
     sudo iptables-save | sudo tee /etc/iptables4.vpn
 
-    sudo iptables-restore </etc/iptables4.normal
-
+    sudo iptables -t nat -F
     sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
     sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
     sudo iptables-save | sudo tee /etc/iptables4.normal
@@ -96,6 +96,7 @@ sudo mv boot.sh /boot.sh
 orig_file /etc/rc.local
 sudo sed -i '/^exit 0/i /boot.sh' /etc/rc.local
 
-sudo mv /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+echo "router" | sudo tee /etc/hostname
+passwd
 
-sudo reboot
+sudo mv /etc/wpa_supplicant/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
